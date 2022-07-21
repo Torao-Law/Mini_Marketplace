@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <title>Document</title>
+</head>
+
+<body class="bg-secondary bg-opacity-10">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/assets/img/logo (3).png" alt="LogoBrand">
+            </a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item ms-3">
+                        <a class="nav-link" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="nav-link" href="/addProject">Add Project</a>
+                    </li>
+                </ul>
+                <div class="d-flex contactMe-link">
+                    <a href="/contact-me">Contact Me</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- main detail blog -->
+    <div class="container">
+        <div class="my-5">
+            <h2 class="fw-bold text-center text-success mb-5">{{data.titleProject}}</h2>
+            <div class="d-flex justify-content-start">
+                <div class="me-5" style="width: 50%; height: 350px;">
+                    <img src="/assets/img/img1.jpg" alt="detailBlogImage" class="rounded-4"
+                        style="width: 100%; height: 100%;">
+                </div>
+
+                <div class="">
+                    <div class="mb-5">
+                        <h4 class="fw-bold">Duration</h4>
+                        <div class="d-flex row">
+                            <span class="text-secondary fs-5 mb-2"><i
+                                    class="fa-solid fa-calendar-days text-dark me-2"></i>{{data.start_Project}} -
+                                {{data.end_Project}}</span>
+                            <span class="text-secondary fs-5"><i
+                                    class="fa-solid fa-clock text-dark me-2"></i>{{data.distanceTime}}</span>
+                        </div>
+                    </div>
+
+                    <div class="">
+                        <h4 class="fw-bold">Technologies</h4>
+                        <div class="row row-cols-2 mb-2">
+                            {{#each data.checkBoxs}}
+                            <span class="fs-5 text-secondary">
+                                <i class="text-dark mb-2 ms-0 me-2 {{this}}"></i>{{icon this}}
+                            </span>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-5" style="text-align: justify;">{{data.bodyProject}}</p>
+        </div>
+    </div>
+</body>
+
+</html>
