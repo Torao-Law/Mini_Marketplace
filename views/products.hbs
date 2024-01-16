@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+      crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <title>Online Shop</title>
+  </head>
+
+  <body class="">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-light shadow">
+      <div class="container">
+        <a class="navbar-brand" href="/" style="height: 50px;">
+          <img src="/assets/img/img-logo.png" alt="logo-brand" style="height: 80%;"/>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item ms-3">
+              <a class="nav-link"href="/">Home</a>
+            </li>
+            <li class="nav-item ms-3">
+              <a class="nav-link  active fw-bolder text-success" href="/products">Product</a>
+            </li>
+          </ul>
+          <a href="/transaction" class="d-flex" style="text-decoration: none;">
+            {{#if data.chartLength}}
+              <i class="fa-solid fa-cart-shopping text-success"></i>
+              <span class="position-absolute bg-danger px-2 rounded-circle text-white" style="right: 100px; top: 15px;">{{data.chartLength}}</span>
+            {{else}}
+              <i class="fa-solid fa-cart-shopping text-success"></i>
+            {{/if}}
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    {{#if messages.success}}
+      <div class="alert alert-success" role="alert">
+        <div class="container">
+          {{messages.success}}
+        </div>
+      </div>
+    {{/if}}
+
+    <div class=" bg-white py-5">
+      <div>
+        <h3 class="text-center">Our Trending <span class="text-danger">Products</span></h3>
+      </div>
+
+      <div class="container mt-5 d-flex">
+        {{#each data.products}}
+        <form method="post" action='/add-cart/{{this.id}}'>
+          <div class="card shadow me-3 pb-1" style="width: 12rem;  ">
+            <img src={{this.image}} class="card-img-top" alt="..." style="width: 100%;">
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-success m-0">{{this.title}}</h5>
+              <p class="m-0">{{this.description}}</p>
+              <p class="m-0 text-danger">Rp.{{this.price}}</p>
+              <button type="submit" class="fst-italic btn btn-outline-success btn-sm mt-1">Add to Cart</button>
+            </div>
+          </div>
+        </form>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class=" bg-white py-5">
+      <div>
+        <h3 class="text-center">Other <span class="text-danger">Products</span></h3>
+      </div>
+
+      <div class="container mt-5 d-flex">
+        {{#each data.products}}
+        <form method="post" action='/add-cart/{{this.id}}'>
+          <div class="card shadow me-3 pb-1" style="width: 12rem;  ">
+            <img src={{this.image}} class="card-img-top" alt="..." style="width: 100%;">
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-success m-0">{{this.title}}</h5>
+              <p class="m-0">{{this.description}}</p>
+              <p class="m-0 text-danger">Rp.{{this.price}}</p>
+              <button type="submit" class="fst-italic btn btn-outline-success btn-sm mt-1">Add to Cart</button>
+            </div>
+          </div>
+        </form>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="p-3 bg-black mb-0">
+      <p class="text-center text-white">Copyright © @2023. All Right Reserved.Designed By Ester, Novi, Zelda</p>
+    </div>
+  </body>
+</html>

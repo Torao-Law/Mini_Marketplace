@@ -1,124 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- CSS only -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-    <!-- JavaScript Bundle with Popper -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <title>Document</title>
-</head>
+    <title>Online Shop</title>
+  </head>
 
-<body class="bg-secondary bg-opacity-10">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <img src="assets/img/logo (3).png" alt="LogoBrand">
-            </a>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item ms-3">
-                        <a class="nav-link active fw-bolder text-success" aria-current="page" href="/">Home</a>
-                    </li>
-                    <li class="nav-item ms-3">
-                        <a class="nav-link" href="/addProject">Add Project</a>
-                    </li>
-                </ul>
-                <div class="d-flex contactMe-link">
-                    <a href="/contact-me">Contact Me</a>
-                </div>
-            </div>
+  <body class="bg-secondary bg-opacity-10">
+    <nav class="navbar navbar-expand-lg bg-light shadow">
+      <div class="container">
+        <a class="navbar-brand" href="/" style="height: 50px;">
+          <img src="/assets/img/img-logo.png" alt="logo-brand" style="height: 80%;"/>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item ms-3">
+              <a class="nav-link active fw-bolder text-success" aria-current="page" href="/">Home</a>
+            </li>
+            <li class="nav-item ms-3">
+              <a class="nav-link" href="/products">Product</a>
+            </li>
+          </ul>
+          <a href="/transaction" class="d-flex" style="text-decoration: none;">
+            {{#if data.chartLength}}
+              <i class="fa-solid fa-cart-shopping text-success"></i>
+              <span class="position-absolute bg-danger px-2 rounded-circle text-white" style="right: 100px; top: 15px;">{{data.chartLength}}</span>
+            {{else}}
+              <i class="fa-solid fa-cart-shopping text-success"></i>
+            {{/if}}
+          </a>
         </div>
+      </div>
     </nav>
 
-    <!-- Content Personal Card -->
-    <div class="container pb-3">
-        <div class="card border-0 my-5 p-5 d-flex flex-row d-flex justify-content-between ">
-            <div class="align-self-center">
-                <h2 class="fw-bold text-success">Hi Welcome to my hut</h2>
-                <p class="desc_person">A web development professional with more than 10 years of experience
-                    contributing, with specific expertise in JavaScript, NodeJs, ReactJS, PostgresSQL, SASS. I can
-                    implement effective Website strategies on a global and international level. My biggest strength
-                    lies
-                    in understanding business dynamics, which allows me to permanently streamline my infrastructure
-                    and
-                    applications.</p>
+    <div class="" style="background-image: url('/assets/img/img-carousel.jpg'); background-size: cover; background-position: center;">
+      <div class=" d-flex align-items-center" style="height: 100vh; background-color: white; opacity: .5;">
+        <div class="container" style="opacity: 1;" >
+          <p class="text-danger m-0">Winter Collection</p>
+          <h1 class="fw-bold text-success m-0 fs-1">New Winter Collection 2023</h1>
+          <p class="text-secondary">There's Nothing Like Trends</p>
 
-                <div class="my-5 download-cv">
-                    <a href="#"
-                        class="bg-success text-decoration-none rounded-pill link-contactme py-2 px-4 text-light me-3">contact</a>
-                    <a href="#" class="text-decoration-none text-success">Download CV <i
-                            class="fa-solid fa-download"></i></a>
-                </div>
-
-                <div class="">
-                    <a href="https://www.linkedin.com/in/dandi-saputra-146a831a4/"
-                        class="btn btn-outline-success py-2 px-3 me-3 rounded-circle"><i
-                            class="fa-brands fa-linkedin-in"></i></a>
-                    <a href="https://www.instagram.com/dandi.s63_/"
-                        class="btn btn-outline-success py-2 px-3 me-3 rounded-circle"><i
-                            class="fa-brands fa-instagram"></i></a>
-                    <a href="https://www.facebook.com/dandi.syahrullah.19/"
-                        class="btn btn-outline-success py-2 px-3 me-3 rounded-circle"><i
-                            class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" class="btn btn-outline-success py-2 px-3 me-3 rounded-circle"><i
-                            class="fa-brands fa-twitter"></i></a>
-                </div>
-            </div>
-
-            <div class=" align-self-center">
-                <div class="card border-0 shadow bg-body rounded text-center ms-5" style="width: 20rem;">
-                    <img src="assets/img/img1.jpg" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <p class="h5 fw-bolder m-0 text-success">Dandi Saputra</p>
-                        <p class="m-0 fw-normal">Fullstack Developer</p>
-                    </div>
-                </div>
-            </div>
+          <div class="my-5">
+            <a href="/products" class="btn btn-outline-success text-decoration-none rounded py-2 px-4 me-3">Shop Now</a>
+          </div>
         </div>
+      </div>
     </div>
 
-    <!-- Content My Project -->
-    <div class="container-fluid bg-light mt-5 pt-3">
-        <div class="container">
-            <h3 class="fw-bold text-center text-success my-5">MY PROJECT</h3>
-            <div class="d-flex justify-content-around mx-auto flex-wrap">
-                {{#each selectMapping}}
-                <div class="card p-3 border-0 mb-5 shadow align-content-between" style="width: 21rem;">
-                    <img src="assets/img/images.jpg" class="card-img-top rounded-3 mb-3" alt="card-image">
-                    <a href="/detail-project/{{@index}}"
-                        class="card-title fw-bold fs-4 text-success text-decoration-none mb-0">{{this.titleProject}}</a>
-                    <h6 class="card-subtitle mb-3 text-muted fw-light">Duration : {{this.distanceTime}}</h6>
-                    <p class="card-text mb-0 hiddenClass">{{this.bodyProject}}</p>
-
-                    <div class="d-flex mb-3 text-secondary ">
-                        {{#each checkBoxs}}
-                        <div class="me-3 fs-4">
-                            <i class="{{this}}"></i>
-                        </div>
-                        {{/each}}
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="/edit-project/{{this.idProject}}"
-                            class="card-link text-decoration-none px-5 py-2 btn btn-outline-warning">EDIT</a>
-                        <a href="/deleteProject/{{this.idProject}}"
-                            class="card-link text-decoration-none btn btn-danger px-5 py-2">DELETE</a>
-                    </div>
-                </div>
-                {{/each}}
-            </div>
+    <div class="bg-white">
+      <div class="container mt-5 d-flex pt-5 justify-content-between align-items-center">
+        <div class="me-5 mb-0" style="width: 60%;">
+          <img src="/assets/img/img-section1.jpg" alt="img-section" style="width: 100%;"/>
         </div>
-    </div>
-</body>
 
+        <div>
+          <h2>Sparkle with Joy, <span class="text-danger">Shine with Style!</span></h2>
+          <p>Tampil penting bukan sekadar pilihan, melainkan suatu seni yang mencerminkan kepercayaan diri dan pesona yang tak terlupakan.</p>
+          <a href="/products" class="btn btn-outline-success">Click Here</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="carouselExampleSlidesOnly" class="carousel slide container py-5" data-bs-ride="carousel">
+      <h2 class="text-center text-danger">Testimonials</h2>
+      <div class="carousel-inner">
+        {{#each data.reviews}}
+        <div class="{{#isReviewActive this.id}} carousel-item active {{else}} carousel-item {{/isReviewActive}}">
+          <div class="container d-flex justify-content-center align-items-center flex-column p-5 mt-5 rounded shadow bg-white">
+            <div style="width: 350px;">
+              <img src={{this.images}} style="width: 100%;"/>
+            </div>
+
+            <div class="mt-3">
+              <p class="m-0 text-center fst-italic">{{this.commentar}}</p>
+              <h4 class="mb-0 mt-3 text-center text-success fw-bold">{{this.name}}</h4>
+              <p class="m-0 text-center text-secondary fs-6">{{this.title}}</p>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="bg-white py-5">
+      <div class="container py-5">
+        <h3 class="text-center">Peluang Terbatas! Raih Penawaran Spesial Ini, Belanja Sekarang!</h3>
+        <p class="text-center">
+          <a href="/products" class="text-success text-decoration-none fst-italic fs-4">Click Here !</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="p-3 bg-black mb-0">
+      <p class="text-center text-white">Copyright © @2023. All Right Reserved.Designed By Ester, Novi, Zelda</p>
+    </div>
+  </body>
 </html>

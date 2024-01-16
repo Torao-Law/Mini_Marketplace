@@ -1,190 +1,232 @@
 const express = require('express')
 const hbs = require('hbs')
+const flash = require('express-flash')
+const session = require('express-session')
+const dbPool = require('./connection/index')
+const midtransClient = require('midtrans-client')
 
 const app = express()
 const PORT = 5000
 
-const dbPool = require('./connection/index')
-const { timeConverter } = require('./handle/timeConverter')
-const { timeDistanceConverter } = require('./handle/timeDistanceConverter')
-
-const isLogin = true
-
-// set call hbs
 app.set('view engine', 'hbs');
-
-// set static folder in express
+app.use(flash())
 app.use(express.static('public'))
-
-// set body parser
 app.use(express.urlencoded({ extended: false }))
+app.use(session({
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 2
+    },
+    store: new session.MemoryStore(),
+    saveUninitialized: true,
+    resave: false,
+    secret: 'secretValue'
+}))
 
-// endpoint get routing
 app.get('/', (req, res) => {
-    dbPool.connect((err, client, done) => {
-        if (err) throw err
-        let querySelect = 'SELECT * FROM tb_project37;'
+    let data = {};
 
-        client.query(querySelect, (err, result) => {
-            done()
-            if (err) throw err
-            let selectMapping = result.rows.map((item) => {
-                return {
-                    ...item,
-                    distanceTime: timeDistanceConverter(item.startProject, item.endProject),
-                    checkBoxs: item.checkTechProject
-                }
-            })
+    dbPool.query("SELECT * FROM reviews", (error, result, fields) => {
+        if (error) throw error;
 
-            res.render('index', { selectMapping })
-        })
-    })
-})
+        data.reviews = result;
 
-app.get('/addProject', (req, res) => {
-    if (!isLogin) {
-        res.redirect('/')
-    } else {
-        res.render('addProject')
-    }
-})
-
-app.get('/contact-me', (req, res) => {
-    res.render('contact-me')
-})
-
-app.post('/addProject', (req, res) => {
-    let getData = req.body
-
-    // function manipulate array for checkbox selected
-    function checkArray(arr) {
-        if (!Array.isArray(arr)) {
-            return arr = [arr]
-        }
-        return arr
-    }
-
-    dbPool.connect((err, client, done) => {
-        if (err) throw err
-
-        let insertData = `INSERT INTO public.tb_project37("titleProject", "bodyProject", "startProject", "endProject", "imgProject", "checkTechProject")
-        VALUES ('${getData.titleProject}', '${getData.bodyProject}', '${getData.startProject}', '${getData.endProject}', 'SQL.png', ARRAY ['${checkArray(getData.checkboxs.join("', '"))}']);`
-
-        client.query(insertData, (err, result) => {
-            done()
-            if (err) throw err
-
-            res.redirect('/')
-        })
-    })
-})
-
-app.get('/detail-project/:id', (req, res) => {
-    let id = req.params.id
-
-    res.render('detail-project', { data: blogs[id] })
-})
-
-app.get('/edit-project/:id', (req, res) => {
-    let id = req.params.id
-
-    let toStringJS = (arr) => {
-        return arr.toString(arr).split("-").reverse().join("-")
-    }
-
-    dbPool.connect((err, client, done) => {
-        if (err) throw err
-        let querySelect = `SELECT * FROM tb_project37 WHERE "idProject" = ${id};`
-
-        client.query(querySelect, (err, result) => {
-            done()
-            if (err) throw err
-            let selectMapping = result.rows.map((item) => {
-                return {
-                    ...item,
-                    distanceTime: timeDistanceConverter(item.startProject, item.endProject),
-                    checkBoxs: item.checkTechProject,
-                    start_Project: toStringJS(timeConverter(item.startProject)),
-                    end_Project: toStringJS(timeConverter(item.endProject))
-                }
-            })
-
-            console.log(selectMapping);
-
-            res.render('editProject', { data: selectMapping[0] })
-        })
-    })
-
-})
-
-app.post('/updateProject', (req, res) => {
-    let data = req.body;
-
-    dbPool.connect((err, client, done) => {
-        if (err) throw err
-        let queryUpdate = `UPDATE tb_project37
-        SET "titleProject"='${data.titleProject}', "bodyProject"='${data.bodyProject}', "startProject"='${data.startProject}', "endProject"='${data.endProject}', "checkTechProject"= ARRAY ['${data.checkboxs.join("', '")}']
-        WHERE "idProject"= '${data.idProject}';`
-        client.query(queryUpdate, (err, result) => {
-            done()
-            if (err) throw err
-
-            res.redirect('/')
-        })
-    })
-})
-
-// endpoint delete
-app.get('/deleteProject/:index', (req, res) => {
-    let id = req.params.index;
-
-    dbPool.connect((err, client, done) => {
-        if (err) throw err
-        let queryDelete = `DELETE FROM tb_project37
-        WHERE "idProject" = ${id};`
-
-        client.query(queryDelete, (err, result) => {
-            done()
-            if (err) throw err
-
-            res.redirect('/');
-        })
-    })
-})
-
-// hbs register show icon
-hbs.registerHelper("icon", function (icon) {
-    if (icon == "fa-brands fa-react") {
-        return "React JS";
-    } else if (icon == "fa-brands fa-node-js") {
-        return "Node JS";
-    } else if (icon == "fa-brands fa-vuejs") {
-        return "Vue JS";
-    } else if (icon == "fa-brands fa-angular") {
-        return "Angular";
-    }
+        dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
+            if(!!transactionResult.length) {
+                dbPool.query(`SELECT * FROM charts WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
+                    data.chartLength = chartResult.length
+                    res.render('index', { data }); 
+                })
+            } else {
+                res.render('index', { data });
+            }
+        })        
+    });
 });
 
-hbs.registerHelper("isAngular", (isChecked) => {
-    if (isChecked == "fa-brands fa-angular") {
-        return "checked";
-    }
+
+app.get('/transaction', (req, res) => {
+    const data = {}
+    dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
+        if (error) throw error;
+
+        data.transactionId = transactionResult[0].id
+        
+        if(!!transactionResult.length) {
+            dbPool.query(`SELECT charts.id, qty, charts.price, products.title AS title, products.image AS image FROM charts LEFT JOIN products ON charts.id_product = products.id WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
+                if (error) throw error;
+
+                const plainObjects = chartResult.map(rowDataPacket => ({ 
+                    ...rowDataPacket,
+                    sub_amount: rowDataPacket.price * rowDataPacket.qty
+                }));
+                
+                data.chart = plainObjects
+                data.chartLength = chartResult.length
+                data.total_amount = plainObjects.reduce((accumulator, currentValue) => accumulator + currentValue.sub_amount, 0);
+
+                dbPool.query("SELECT * FROM shipping", (error, shippingResult, fields) => {
+                    if (error) throw error;
+                    
+                    data.listShipping = shippingResult.map(data => ({ ...data }))
+
+                    res.render('transaction', { data }); 
+                })
+            })
+        } else {
+            res.render('transaction')
+        }
+    })  
 })
-hbs.registerHelper("isReact", (isChecked) => {
-    if (isChecked == "fa-brands fa-react") {
-        return "checked";
-    }
+
+
+app.get('/products', (req, res) => {
+    let data = {};
+
+    dbPool.query("SELECT * FROM products;", (error, result, fields) => {
+        if (error) throw error;
+
+        data.products = result;
+
+        dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
+            if(!!transactionResult.length) {
+                dbPool.query(`SELECT * FROM charts WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
+                    data.chartLength = chartResult.length
+                    res.render('products', { data })
+                })
+            } else {
+                res.render('products', { data })
+            }
+        })        
+    });
 })
-hbs.registerHelper("isVue", (isChecked) => {
-    if (isChecked == "fa-brands fa-vuejs") {
-        return "checked";
-    }
+
+
+app.post("/add-cart/:id", (req, res) => {
+    const { id } = req.params;
+
+    dbPool.query(`SELECT * FROM products WHERE id=${id}`, (error, result, fields) => {
+        if (error) throw error;
+
+        const productData = {
+            idProduct: result[0].id,
+            qty: 1,
+            price: result[0].price
+        };
+
+        dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
+            if (error) throw error;
+
+            if (transactionResult.length === 0) {
+                dbPool.query("INSERT INTO transactions (status) VALUES ('pending')", (error, insertResult, fields) => {
+                    if (error) throw error;
+
+                    const transactionId = insertResult.insertId;
+
+                    dbPool.query(`INSERT INTO charts (id_product, qty, price, id_transaction) VALUES (${productData.idProduct},${productData.qty},${productData.price},${transactionId})`, (error, insertChartResult, fields) => {
+                        if (error) throw error;
+
+                        req.flash('success', `Product ${result[0].title} successfully added`)
+                        res.redirect('/products');
+                    });
+                });
+            } else {
+                    dbPool.query(`SELECT * FROM charts WHERE id_product=${productData.idProduct} AND id_transaction=${transactionResult[0].id}`, (error, chartResult, fields) => {
+                    if (error) throw error;
+
+                    if (chartResult.length === 0) {
+                        const queryInsert = `INSERT INTO charts (id_product, qty, price, id_transaction) VALUES (${productData.idProduct},${productData.qty},${productData.price},${transactionResult[0].id})`;
+
+                        dbPool.query(queryInsert, (error, insertChartResult, fields) => {
+                            if (error) throw error;
+
+                            req.flash('success', `Product ${result[0].title} successfully added`);
+                            res.redirect('/products');
+                        });
+                    } else {
+                        const existingQty = chartResult[0].qty;
+                        const updatedQty = existingQty + productData.qty;
+
+                        dbPool.query(`UPDATE charts SET qty=${updatedQty} WHERE id=${chartResult[0].id}`, (error, updateResult, fields) => {
+                            if (error) throw error;
+
+                            req.flash('success', `Product ${result[0].title} quantity updated`);
+                            res.redirect('/products');
+                        });
+                    }
+                });
+            }
+        });
+    });
+});
+
+app.get('/checkout/:id', (req, res) => {
+    const { id } = req.params
+    const { name, address, shipping, totalAmount } = req.query;
+
+    dbPool.query(`INSERT INTO history_buyer (buyer, address, id_shipping, id_transaction) VALUES ('${name}','${address}','${shipping}','${id}')`, (error, resultBuyer, fields) => {
+        if (error) throw error
+
+        dbPool.query(`UPDATE transactions SET sub_amount='${totalAmount}' WHERE id=${id}`, (error, transactionUpdate, fields) => {
+            if (error) throw error
+    
+            let snap = new midtransClient.Snap({
+                isProduction: false,
+                serverKey: "SB-Mid-server-AZrC2CaRU0L3R3vvYEMaf30h"
+            })
+
+            let parameter = {
+                "transaction_details": {
+                    "order_id": `${id}`,
+                    "gross_amount": totalAmount
+                },
+                "credit_card":{
+                    "secure" : true
+                },
+                "customer_details": {
+                    "full_name": `${name}`,
+                    "address": `${address}`
+                }
+            };
+            
+            snap.createTransaction(parameter)
+                .then((transaction)=>{
+                    // transaction token
+                    let transactionToken = transaction;
+                    // console.log('transactionToken:',transactionToken);
+
+                    res.redirect(transaction.redirect_url);
+                })
+        })
+    })
+    
+});
+
+
+app.post('/notifications', (req, res) => {
+    const notificationsData = req.body
+
+    console.log(notificationsData)
+    res.json({ received: true })
 })
-hbs.registerHelper("isNode", (isChecked) => {
-    if (isChecked == "fa-brands fa-node-js") {
-        return "checked";
-    }
+
+app.get('/delete-chart/:id', (req, res) => {
+    const { id } = req.params
+
+    dbPool.query(`DELETE FROM charts WHERE id = ${id}`, (error, chartResult, fields) => {
+        req.flash('success', `Product success delete`);
+        res.redirect('/transaction')
+    })
 })
+
+hbs.registerHelper("isReviewActive", (id, options) => {
+    if(id == 1) {
+        return options.fn(this)
+    } else {
+        return options.inverse(this)
+    }
+}) 
 
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`)
