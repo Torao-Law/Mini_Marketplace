@@ -4,6 +4,7 @@ const flash = require('express-flash')
 const session = require('express-session')
 const dbPool = require('./connection/index')
 const midtransClient = require('midtrans-client')
+const nodemailer = require('nodemailer')
 
 const app = express()
 const PORT = 5000
@@ -51,9 +52,9 @@ app.get('/transaction', (req, res) => {
     dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
         if (error) throw error;
 
-        data.transactionId = transactionResult[0].id
         
         if(!!transactionResult.length) {
+            data.transactionId = transactionResult[0].id
             dbPool.query(`SELECT charts.id, qty, charts.price, products.title AS title, products.image AS image FROM charts LEFT JOIN products ON charts.id_product = products.id WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
                 if (error) throw error;
 
@@ -163,44 +164,129 @@ app.post("/add-cart/:id", (req, res) => {
 
 app.get('/checkout/:id', (req, res) => {
     const { id } = req.params
-    const { name, address, shipping, totalAmount } = req.query;
+    const { name, buyer_mail, address, shipping, totalAmount } = req.query;
+
+    console.log(shipping)
 
     dbPool.query(`INSERT INTO history_buyer (buyer, address, id_shipping, id_transaction) VALUES ('${name}','${address}','${shipping}','${id}')`, (error, resultBuyer, fields) => {
         if (error) throw error
 
         dbPool.query(`UPDATE transactions SET sub_amount='${totalAmount}' WHERE id=${id}`, (error, transactionUpdate, fields) => {
             if (error) throw error
-    
-            let snap = new midtransClient.Snap({
-                isProduction: false,
-                serverKey: "SB-Mid-server-AZrC2CaRU0L3R3vvYEMaf30h"
-            })
 
-            let parameter = {
-                "transaction_details": {
-                    "order_id": `${id}`,
-                    "gross_amount": totalAmount
-                },
-                "credit_card":{
-                    "secure" : true
-                },
-                "customer_details": {
-                    "full_name": `${name}`,
-                    "address": `${address}`
-                }
-            };
-            
-            snap.createTransaction(parameter)
-                .then((transaction)=>{
-                    // transaction token
-                    let transactionToken = transaction;
-                    // console.log('transactionToken:',transactionToken);
-
-                    res.redirect(transaction.redirect_url);
+            dbPool.query(`SELECT charts.id, qty, charts.price, products.title AS title, products.image AS image FROM charts LEFT JOIN products ON charts.id_product = products.id WHERE id_transaction = ${id}`, (error, findCharts, fields) => {
+                if (error) throw error            
+                  
+                let snap = new midtransClient.Snap({
+                    isProduction: false,
+                    serverKey: "SB-Mid-server-AZrC2CaRU0L3R3vvYEMaf30h"
                 })
+
+                let parameter = {
+                    "transaction_details": {
+                        "order_id": `${id}`,
+                        "gross_amount": totalAmount
+                    },
+                    "credit_card":{
+                        "secure" : true
+                    },
+                    "customer_details": {
+                        "first_name": `${name}`,
+                        "email": `${buyer_mail}`,
+                        "address": `${address}`,
+                    }
+                };
+
+
+                snap.createTransaction(parameter)
+                .then((transaction) => {
+                    dbPool.query(`UPDATE transactions SET status='SUCCESS' WHERE id=${id}`, (error, transactionStatus, fields) => {
+                        if (error) throw error
+                      
+                        const obj = findCharts.map(row => {
+                            return {
+                                title: row.title,
+                                qty: row.qty,
+                                price: row.price,
+                                image: row.image,
+                                sub_amount: row.qty * row.price
+                            }
+                        })
+
+                        const findSubAmount = obj.reduce((prev, current) => prev + current.sub_amount, 0)
+                        const data = {
+                            chart: obj,
+                            totalAmount: findSubAmount
+                        }
+
+                        const transporter = nodemailer.createTransport({
+                            service: 'gmail',
+                            auth: {
+                                user: 'dandisyahrullah.12@gmail.com',
+                                pass: 'xtko xvxy uaiv etdr'
+                            }
+                        });                        
+                          
+                        const listItems = data.chart.map((detail) => `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex my-3 align-items-center">
+                                    <div style="height: 6rem;">
+                                        <img src="${detail.image}" class="card-img-top"  style="height: 100%;" alt="img-product">
+                                    </div>
+                                    <div class="ms-3">
+                                        <p class="m-0 fw-bold fs-5 text-success">${detail.title}</p>
+                                        <p class="m-0 text-danger fw-light">Rp.${detail.price}</p>
+                                        <p class="m-0">QTY : ${detail.qty}</p>
+                                        <p class="fw-bold text-danger">Rp. ${detail.sub_amount}</p>
+                                    </div>
+                                </div>
+                            </div>`
+                        );
+        
+                        const mailOptions = {
+                            from: 'dandisyahrullah.12@gmail.com',
+                            to: buyer_mail,
+                            subject: 'Payment Successful',
+                            html: `
+                                <!DOCTYPE html>
+                                <html lang="en">
+                                <head>
+                                <meta charset="UTF-8" />
+                                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                                <title>Document</title>
+                                <style>
+                                    h1 {
+                                    color: brown;
+                                    }
+                                </style>
+                                </head>
+                                <body>
+                                <h2>Product payment :</h2>
+    
+                                <p>Thank you for shopping, your item will be processed soon. your receipt number ${id}</p>
+                                ${listItems.join('')}
+                                <hr />
+                                <p>Rp. ${data.totalAmount}</p>
+                                </body>
+                                </html>
+                            `,
+                        };
+                        
+                        transporter.sendMail(mailOptions, function(error, info){
+                            if (error) {
+                                console.log(error);
+                            } else {
+                                console.log('Email sent: ' + info.response);
+                                
+                                res.redirect(transaction.redirect_url);
+                            }
+                        })
+                    })             
+                })
+            })
         })
     })
-    
 });
 
 

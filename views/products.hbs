@@ -54,11 +54,11 @@
         <h3 class="text-center">Our Trending <span class="text-danger">Products</span></h3>
       </div>
 
-      <div class="container mt-5 d-flex">
+      <div class="container mt-5 d-flex justify-content-between">
         {{#each data.products}}
         <form method="post" action='/add-cart/{{this.id}}'>
           <div class="card shadow me-3 pb-1" style="width: 12rem;  ">
-            <img src={{this.image}} class="card-img-top" alt="..." style="width: 100%;">
+            <img src={{this.image}} class="object-fit-contain" alt="...">
             <div class="card-body">
               <h5 class="card-title fw-bold text-success m-0">{{this.title}}</h5>
               <p class="m-0">{{this.description}}</p>
@@ -76,7 +76,7 @@
         <h3 class="text-center">Other <span class="text-danger">Products</span></h3>
       </div>
 
-      <div class="container mt-5 d-flex">
+      <div class="container mt-5 d-flex justify-content-between">
         {{#each data.products}}
         <form method="post" action='/add-cart/{{this.id}}'>
           <div class="card shadow me-3 pb-1" style="width: 12rem;  ">
