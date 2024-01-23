@@ -14,34 +14,87 @@
   </head>
 
   <body class="bg-secondary bg-opacity-10">
-    <nav class="navbar navbar-expand-lg bg-light shadow">
+    <nav class="navbar navbar-expand-lg bg-light shadow fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="/" style="height: 50px;">
-          <img src="/assets/img/img-logo.png" alt="logo-brand" style="height: 80%;"/>
+        <a class="navbar-brand me-4" href="/" style="height: 50px;">
+          <img src="/assets/img/img-logo.png" alt="logo-brand" style="height: 80%;" />
         </a>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item ms-3">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+            <li class="nav-item me-3">
               <a class="nav-link active fw-bolder text-success" aria-current="page" href="/">Home</a>
             </li>
-            <li class="nav-item ms-3">
+            <li class="nav-item">
               <a class="nav-link" href="/products">Product</a>
             </li>
           </ul>
-          <a href="/transaction" class="d-flex" style="text-decoration: none;">
-            {{#if data.chartLength}}
-              <i class="fa-solid fa-cart-shopping text-success"></i>
-              <span class="position-absolute bg-danger px-2 rounded-circle text-white" style="right: 100px; top: 15px;">{{data.chartLength}}</span>
+
+          <ul class="navbar-nav d-flex align-items-center justify-content-center">
+            {{#if isLogin}}
+              <li class="nav-item me-4">
+                <a href="/transaction" style="text-decoration: none;">
+                  {{#if data.chartLength}}
+                    <i class="fa-solid fa-cart-shopping text-success"></i>
+                    <span class="position-absolute bg-danger px-2 rounded-circle text-white" style="right: 100px; top: 15px;">{{data.chartLength}}</span>
+                  {{else}}
+                    <i class="fa-solid fa-cart-shopping text-success"></i>
+                  {{/if}}
+                </a>
+              </li>
+      
+              <li class="nav-item">
+                <div class="dropdown container">
+                  <a class="" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="/assets/img/img-avatar.jpg" class="img-thumbnail rounded-circle" alt="img-avatar" style="height: 40px;">
+                  </a>
+
+                  <ul class="dropdown-menu">
+                    {{#if userLogin}}
+                    <li>
+                      <a class="dropdown-item" style="text-decoration: none;">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="ms-2">{{userLogin}}</span>
+                      </a>
+                    </li>
+                    {{/if}}
+                    <li>
+                      <a class="dropdown-item" href="/transaction" style="text-decoration: none;">
+                        {{#if data.chartLength}}
+                          <i class="fa-solid fa-cart-shopping text-success"></i>
+                          <span class="ms-2 text-success">Cart</span>
+                          <span class="bg-danger px-2 rounded-circle text-white" style="right: 100px; top: 15px;">{{data.chartLength}}</span>
+                        {{else}}
+                          <i class="fa-solid fa-cart-shopping text-success"></i>
+                        {{/if}}
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item text-danger" href="/logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="ms-2">Logout</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
             {{else}}
-              <i class="fa-solid fa-cart-shopping text-success"></i>
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item ms-3">
+                  <a class="nav-link" href="/register">Regsiter</a>
+                </li>
+                <li class="nav-item ms-3">
+                  <a class="nav-link" href="/login">Login</a>
+                </li>
+              </ul>
             {{/if}}
-          </a>
+          </ul>
         </div>
       </div>
     </nav>
 
+
     <div class="">
-      <div class="container d-flex align-items-center" style="height: 80vh;">
+      <div class="container d-flex align-items-center" style="height: 90vh;">
         <div class="" >
           <p class="text-danger m-0">Winter Collection</p>
           <h1 class="fw-bold text-success m-0 fs-1">New Winter Collection 2023</h1>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <title>Online Shop</title>
+  </head>
+
+  <body class="bg-secondary bg-opacity-10">
+    <nav class="navbar navbar-expand-lg bg-light shadow">
+      <div class="container">
+        <a class="navbar-brand" href="/" style="height: 50px;">
+          <img src="/assets/img/img-logo.png" alt="logo-brand" style="height: 80%;"/>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item ms-3">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item ms-3">
+              <a class="nav-link" href="/products">Product</a>
+            </li>
+          </ul>
+
+          <div class="d-flex">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item ms-3">
+                <a class="nav-link active fw-bolder text-success" href="/register">Regsiter</a>
+              </li>
+              <li class="nav-item ms-3">
+                <a class="nav-link" href="/login">Login</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    {{#if messages.danger}}
+      <div class="alert alert-danger" role="alert">
+        <div class="container">
+          {{messages.danger}}
+        </div>
+      </div>
+    {{/if}}
+
+    <div class="container d-flex justify-content-center">
+      <div class="w-50 me-5">
+        <img src="/assets/img/img-register.png" alt="img-register" style="width: 100%;" />
+      </div>
+      <div class="w-50">
+        <h3 class="text-center mt-5">REGISTER</h3>
+        <form action="/register" method="POST">
+          <div class="mb-3">
+            <label for="username" class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" id="username" aria-describedby="emailHelp" />
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" id="email" aria-describedby="emailHelp" />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="text" class="form-control" name="password" id="password" />
+          </div>
+          <button type="submit" class="btn btn-success mt-3 px-5">REGISTER</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

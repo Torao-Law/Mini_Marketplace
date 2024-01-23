@@ -5,6 +5,7 @@ const session = require('express-session')
 const dbPool = require('./connection/index')
 const midtransClient = require('midtrans-client')
 const nodemailer = require('nodemailer')
+const bcrypt = require('bcrypt')
 
 const app = express()
 const PORT = 5000
@@ -26,24 +27,40 @@ app.use(session({
 }))
 
 app.get('/', (req, res) => {
-    let data = {};
+    const isLogin = req.session.isLogin
+    const userLogin = req.session.user
 
-    dbPool.query("SELECT * FROM reviews", (error, result, fields) => {
-        if (error) throw error;
+    console.log(userLogin)
 
-        data.reviews = result;
-
-        dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
-            if(!!transactionResult.length) {
-                dbPool.query(`SELECT * FROM charts WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
-                    data.chartLength = chartResult.length
-                    res.render('index', { data }); 
-                })
-            } else {
-                res.render('index', { data });
-            }
-        })        
-    });
+    // if(!isLogin) {
+    //     res.redirect('/login')
+    // } else {
+        let data = {};
+    
+        dbPool.query("SELECT * FROM reviews", (error, result, fields) => {
+            if (error) throw error;
+            data.reviews = result;
+    
+            dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
+                if(!!transactionResult.length) {
+                    dbPool.query(`SELECT * FROM charts WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
+                        data.chartLength = chartResult.length
+                        res.render('index', { 
+                            data,
+                            isLogin,
+                            userLogin
+                        }); 
+                    })
+                } else {
+                    res.render('index', { 
+                        data,
+                        isLogin,
+                        userLogin
+                    });
+                }
+            })        
+        });
+    // }
 });
 
 
@@ -222,8 +239,8 @@ app.get('/checkout/:id', (req, res) => {
                         const transporter = nodemailer.createTransport({
                             service: 'gmail',
                             auth: {
-                                user: 'dandisyahrullah.12@gmail.com',
-                                pass: 'xtko xvxy uaiv etdr'
+                                user: 'zeldavirgie@gmail.com',
+                                pass: 'zffc ieij urhu tcxz'
                             }
                         });                        
                           
@@ -234,10 +251,10 @@ app.get('/checkout/:id', (req, res) => {
                                         <img src="${detail.image}" class="card-img-top"  style="height: 100%;" alt="img-product">
                                     </div>
                                     <div class="ms-3">
-                                        <p class="m-0 fw-bold fs-5 text-success">${detail.title}</p>
-                                        <p class="m-0 text-danger fw-light">Rp.${detail.price}</p>
+                                        <p class="m-0 fw-bold fs-5 text-success">Name : ${detail.title}</p>
+                                        <p class="m-0 text-danger fw-light">Price : Rp.${detail.price}</p>
                                         <p class="m-0">QTY : ${detail.qty}</p>
-                                        <p class="fw-bold text-danger">Rp. ${detail.sub_amount}</p>
+                                        <p class="fw-bold text-danger">Sub Amount : Rp. ${detail.sub_amount}</p>
                                     </div>
                                 </div>
                             </div>`
@@ -267,7 +284,7 @@ app.get('/checkout/:id', (req, res) => {
                                 <p>Thank you for shopping, your item will be processed soon. your receipt number ${id}</p>
                                 ${listItems.join('')}
                                 <hr />
-                                <p>Rp. ${data.totalAmount}</p>
+                                <p>Total Payment : Rp. ${data.totalAmount}</p>
                                 </body>
                                 </html>
                             `,
@@ -289,20 +306,67 @@ app.get('/checkout/:id', (req, res) => {
     })
 });
 
-
-app.post('/notifications', (req, res) => {
-    const notificationsData = req.body
-
-    console.log(notificationsData)
-    res.json({ received: true })
-})
-
 app.get('/delete-chart/:id', (req, res) => {
     const { id } = req.params
 
     dbPool.query(`DELETE FROM charts WHERE id = ${id}`, (error, chartResult, fields) => {
         req.flash('success', `Product success delete`);
         res.redirect('/transaction')
+    })
+})
+
+app.get('/register', (req, res) => {
+    res.render('register')
+})
+
+app.post('/register', (req, res) => {
+    const { name, email, password } = req.body
+
+    dbPool.query(`SELECT * FROM users WHERE email = '${email}'`, async (error, findEmail, fields) => {
+        if(!!findEmail.length) {
+            req.flash('danger', 'Email already register')
+            res.redirect('/register')
+        } else {
+            const hashPassword = await bcrypt.hash(password, 10)
+            dbPool.query(`INSERT INTO users(name, email, password) VALUES ('${name}','${email}','${hashPassword}')`, (error, registerResult, fields) => {
+                req.flash('success', 'Success register user')
+                res.redirect('/login')
+            })
+        }
+    })
+})
+
+app.get('/login', (req, res) => {
+    res.render('login')
+})
+
+app.post('/login', (req, res) => {
+    const { email, password } = req.body
+
+    dbPool.query(`SELECT * FROM users WHERE email = '${email}'`, (error, findEmail, fields) => {
+        if(!findEmail.length) {
+            req.flash('danger', 'Email not registered')
+            res.redirect('/login')
+        } else {
+            bcrypt.hash(password, findEmail[0].password, (err, result) => {
+                if(!result) {
+                    req.flash('danger', 'password is wrong')
+                    return res.redirect('/login')
+                } else {
+                    req.session.isLogin = true
+                    req.session.idUser = findEmail[0].id
+                    req.session.user = findEmail[0].name
+                    req.flash('success', 'Login success')
+                    res.redirect('/')
+                }             
+            })
+        }
+    })
+})
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login')
     })
 })
 
