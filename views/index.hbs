@@ -32,14 +32,11 @@
           <ul class="navbar-nav d-flex align-items-center justify-content-center">
             {{#if isLogin}}
               <li class="nav-item me-4">
-                <a href="/transaction" style="text-decoration: none;">
-                  {{#if data.chartLength}}
-                    <i class="fa-solid fa-cart-shopping text-success"></i>
-                    <span class="position-absolute bg-danger px-2 rounded-circle text-white" style="right: 100px; top: 15px;">{{data.chartLength}}</span>
-                  {{else}}
-                    <i class="fa-solid fa-cart-shopping text-success"></i>
-                  {{/if}}
-                </a>
+                {{#if data.chartLength}}
+                  <span class="position-absolute text-danger" style="right: 125px; top: 12px; z-index: 99;">
+                    <i class="fa-solid fa-circle"></i>
+                  </span>
+                {{/if}}
               </li>
       
               <li class="nav-item">
@@ -65,6 +62,7 @@
                           <span class="bg-danger px-2 rounded-circle text-white" style="right: 100px; top: 15px;">{{data.chartLength}}</span>
                         {{else}}
                           <i class="fa-solid fa-cart-shopping text-success"></i>
+                          <span class="ms-2 text-success">Cart</span>
                         {{/if}}
                       </a>
                     </li>

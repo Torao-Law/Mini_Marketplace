@@ -28,23 +28,28 @@ app.use(session({
 
 app.get('/', (req, res) => {
     const isLogin = req.session.isLogin
-    const userLogin = req.session.user
+    const idUser = req.session.idUser
+    const userLogin = req.session.userName
+    let data = {};
 
-    console.log(userLogin)
+    dbPool.query("SELECT * FROM reviews", (error, result, fields) => {
+        if (error) throw error;
+        data.reviews = result.map((data) => {
+            return {
+                id: data.id,
+                name: data.name,
+                title: data.title,
+                commentar: data.commentar,
+                images: data.images
+            }
+        });
 
-    // if(!isLogin) {
-    //     res.redirect('/login')
-    // } else {
-        let data = {};
-    
-        dbPool.query("SELECT * FROM reviews", (error, result, fields) => {
-            if (error) throw error;
-            data.reviews = result;
-    
-            dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
+        if(isLogin) {
+            dbPool.query(`SELECT * FROM transactions WHERE status = 'pending' AND id_user = ${idUser}`, (error, transactionResult, fields) => {
                 if(!!transactionResult.length) {
                     dbPool.query(`SELECT * FROM charts WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
                         data.chartLength = chartResult.length
+    
                         res.render('index', { 
                             data,
                             isLogin,
@@ -59,47 +64,71 @@ app.get('/', (req, res) => {
                     });
                 }
             })        
-        });
-    // }
+        } else {
+            res.render('index', { 
+                data
+            });
+        }
+    });
 });
 
 
 app.get('/transaction', (req, res) => {
+    const isLogin = req.session.isLogin
+    const idUser = req.session.idUser
+    const userLogin = req.session.userName
     const data = {}
-    dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
-        if (error) throw error;
 
-        
-        if(!!transactionResult.length) {
-            data.transactionId = transactionResult[0].id
-            dbPool.query(`SELECT charts.id, qty, charts.price, products.title AS title, products.image AS image FROM charts LEFT JOIN products ON charts.id_product = products.id WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
-                if (error) throw error;
+    if(isLogin) {
+        dbPool.query(`SELECT * FROM transactions WHERE status = 'pending' AND id_user = ${idUser}`, (error, transactionResult, fields) => {
+            if (error) throw error;
 
-                const plainObjects = chartResult.map(rowDataPacket => ({ 
-                    ...rowDataPacket,
-                    sub_amount: rowDataPacket.price * rowDataPacket.qty
-                }));
-                
-                data.chart = plainObjects
-                data.chartLength = chartResult.length
-                data.total_amount = plainObjects.reduce((accumulator, currentValue) => accumulator + currentValue.sub_amount, 0);
-
-                dbPool.query("SELECT * FROM shipping", (error, shippingResult, fields) => {
+            
+            if(!!transactionResult.length) {
+                data.transactionId = transactionResult[0].id
+                dbPool.query(`SELECT charts.id, qty, charts.price, products.title AS title, products.image AS image FROM charts LEFT JOIN products ON charts.id_product = products.id WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
                     if (error) throw error;
-                    
-                    data.listShipping = shippingResult.map(data => ({ ...data }))
 
-                    res.render('transaction', { data }); 
+                    const plainObjects = chartResult.map(rowDataPacket => ({ 
+                        ...rowDataPacket,
+                        sub_amount: rowDataPacket.price * rowDataPacket.qty
+                    }));
+                    
+                    data.chart = plainObjects
+                    data.chartLength = chartResult.length
+                    data.total_amount = plainObjects.reduce((accumulator, currentValue) => accumulator + currentValue.sub_amount, 0);
+
+                    dbPool.query("SELECT * FROM shipping", (error, shippingResult, fields) => {
+                        if (error) throw error;
+                        
+                        data.listShipping = shippingResult.map(data => ({ ...data }))
+
+                        res.render('transaction', { 
+                            data,
+                            isLogin,
+                            userLogin
+                        }); 
+                    })
                 })
-            })
-        } else {
-            res.render('transaction')
-        }
-    })  
+            } else {
+                res.render('transaction', {
+                    isLogin,
+                    userLogin
+                })
+            }
+        })  
+    } else {
+        req.flash('danger', 'Login Terlebih dahulu')
+        res.redirect('/login')
+    }
 })
 
 
 app.get('/products', (req, res) => {
+    const isLogin = req.session.isLogin
+    const idUser = req.session.idUser
+    const userLogin = req.session.userName
+    
     let data = {};
 
     dbPool.query("SELECT * FROM products;", (error, result, fields) => {
@@ -107,83 +136,100 @@ app.get('/products', (req, res) => {
 
         data.products = result;
 
-        dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
-            if(!!transactionResult.length) {
-                dbPool.query(`SELECT * FROM charts WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
-                    data.chartLength = chartResult.length
-                    res.render('products', { data })
-                })
-            } else {
-                res.render('products', { data })
-            }
-        })        
+        if(isLogin) {
+            dbPool.query(`SELECT * FROM transactions WHERE status = 'pending' AND id_user = ${idUser}`, (error, transactionResult, fields) => {
+                if(!!transactionResult.length) {
+                    dbPool.query(`SELECT * FROM charts WHERE id_transaction = ${transactionResult[0].id}`, (error, chartResult, fields) => {
+                        data.chartLength = chartResult.length
+                        res.render('products', { 
+                            data,
+                            isLogin,
+                            userLogin
+                        })
+                    })
+                } else {
+                    res.render('products', { 
+                        data,
+                        isLogin,
+                        userLogin
+                     })
+                }
+            }) 
+        } else {
+            res.render('products', { data })
+        }
     });
 })
 
 
 app.post("/add-cart/:id", (req, res) => {
     const { id } = req.params;
+    const isLogin = req.session.isLogin
+    const idUser = req.session.idUser
 
-    dbPool.query(`SELECT * FROM products WHERE id=${id}`, (error, result, fields) => {
-        if (error) throw error;
-
-        const productData = {
-            idProduct: result[0].id,
-            qty: 1,
-            price: result[0].price
-        };
-
-        dbPool.query("SELECT * FROM transactions WHERE status = 'pending'", (error, transactionResult, fields) => {
+    if(isLogin) {
+        dbPool.query(`SELECT * FROM products WHERE id=${id}`, (error, result, fields) => {
             if (error) throw error;
 
-            if (transactionResult.length === 0) {
-                dbPool.query("INSERT INTO transactions (status) VALUES ('pending')", (error, insertResult, fields) => {
-                    if (error) throw error;
+            const productData = {
+                idProduct: result[0].id,
+                qty: 1,
+                price: result[0].price
+            };
 
-                    const transactionId = insertResult.insertId;
+            dbPool.query(`SELECT * FROM transactions WHERE status = 'pending' AND id_user = ${idUser}`, (error, transactionResult, fields) => {
+                if (error) throw error;
 
-                    dbPool.query(`INSERT INTO charts (id_product, qty, price, id_transaction) VALUES (${productData.idProduct},${productData.qty},${productData.price},${transactionId})`, (error, insertChartResult, fields) => {
+                if (transactionResult.length === 0) {
+                    dbPool.query(`INSERT INTO transactions (status, id_user) VALUES ('pending', ${idUser})`, (error, insertResult, fields) => {
                         if (error) throw error;
 
-                        req.flash('success', `Product ${result[0].title} successfully added`)
-                        res.redirect('/products');
+                        const transactionId = insertResult.insertId;
+
+                        dbPool.query(`INSERT INTO charts (id_product, qty, price, id_transaction) VALUES (${productData.idProduct},${productData.qty},${productData.price},${transactionId})`, (error, insertChartResult, fields) => {
+                            if (error) throw error;
+
+                            req.flash('success', `Product ${result[0].title} successfully added`)
+                            res.redirect('/products');
+                        });
                     });
-                });
-            } else {
-                    dbPool.query(`SELECT * FROM charts WHERE id_product=${productData.idProduct} AND id_transaction=${transactionResult[0].id}`, (error, chartResult, fields) => {
-                    if (error) throw error;
+                } else {
+                        dbPool.query(`SELECT * FROM charts WHERE id_product=${productData.idProduct} AND id_transaction=${transactionResult[0].id}`, (error, chartResult, fields) => {
+                        if (error) throw error;
 
-                    if (chartResult.length === 0) {
-                        const queryInsert = `INSERT INTO charts (id_product, qty, price, id_transaction) VALUES (${productData.idProduct},${productData.qty},${productData.price},${transactionResult[0].id})`;
+                        if (chartResult.length === 0) {
+                            const queryInsert = `INSERT INTO charts (id_product, qty, price, id_transaction) VALUES (${productData.idProduct},${productData.qty},${productData.price},${transactionResult[0].id})`;
 
-                        dbPool.query(queryInsert, (error, insertChartResult, fields) => {
-                            if (error) throw error;
+                            dbPool.query(queryInsert, (error, insertChartResult, fields) => {
+                                if (error) throw error;
 
-                            req.flash('success', `Product ${result[0].title} successfully added`);
-                            res.redirect('/products');
-                        });
-                    } else {
-                        const existingQty = chartResult[0].qty;
-                        const updatedQty = existingQty + productData.qty;
+                                req.flash('success', `Product ${result[0].title} successfully added`);
+                                res.redirect('/products');
+                            });
+                        } else {
+                            const existingQty = chartResult[0].qty;
+                            const updatedQty = existingQty + productData.qty;
 
-                        dbPool.query(`UPDATE charts SET qty=${updatedQty} WHERE id=${chartResult[0].id}`, (error, updateResult, fields) => {
-                            if (error) throw error;
+                            dbPool.query(`UPDATE charts SET qty=${updatedQty} WHERE id=${chartResult[0].id}`, (error, updateResult, fields) => {
+                                if (error) throw error;
 
-                            req.flash('success', `Product ${result[0].title} quantity updated`);
-                            res.redirect('/products');
-                        });
-                    }
-                });
-            }
+                                req.flash('success', `Product ${result[0].title} quantity updated`);
+                                res.redirect('/products');
+                            });
+                        }
+                    });
+                }
+            });
         });
-    });
+    } else {
+        req.flash('danger', 'Tolong Login terlebih dahulu')
+        res.redirect('/products')
+    }
 });
 
 app.get('/checkout/:id', (req, res) => {
     const { id } = req.params
     const { name, buyer_mail, address, shipping, totalAmount } = req.query;
-
-    console.log(shipping)
 
     dbPool.query(`INSERT INTO history_buyer (buyer, address, id_shipping, id_transaction) VALUES ('${name}','${address}','${shipping}','${id}')`, (error, resultBuyer, fields) => {
         if (error) throw error
@@ -213,7 +259,6 @@ app.get('/checkout/:id', (req, res) => {
                         "address": `${address}`,
                     }
                 };
-
 
                 snap.createTransaction(parameter)
                 .then((transaction) => {
@@ -355,7 +400,7 @@ app.post('/login', (req, res) => {
                 } else {
                     req.session.isLogin = true
                     req.session.idUser = findEmail[0].id
-                    req.session.user = findEmail[0].name
+                    req.session.userName = findEmail[0].name
                     req.flash('success', 'Login success')
                     res.redirect('/')
                 }             
