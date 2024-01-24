@@ -109,11 +109,11 @@
 
     <div class=" bg-white py-5">
       <div>
-        <h3 class="text-center">Our Trending <span class="text-danger">Products</span></h3>
+        <h3 class="text-center">Special <span class="text-danger">For You</span></h3>
       </div>
 
       <div class="container mt-5 d-flex justify-content-between">
-        {{#each data.products}}
+        {{#each data.products.special}}
         <form method="post" action='/add-cart/{{this.id}}'>
           <div class="card shadow me-3 pb-1" style="width: 12rem;  ">
             <img src={{this.image}} class="object-fit-contain" alt="...">
@@ -122,7 +122,7 @@
               <p class="m-0">{{this.description}}</p>
               <p class="m-0 text-danger">Rp.{{this.price}}</p>
               <button type="submit" class="fst-italic btn btn-outline-success btn-sm mt-1">
-                <i class="fa-regular fa-heart"></i>
+                <i class="fa-solid fa-cart-shopping"></i>
               </button>
             </div>
           </div>
@@ -133,11 +133,11 @@
 
     <div class=" bg-white py-5">
       <div>
-        <h3 class="text-center">Other <span class="text-danger">Products</span></h3>
+        <h3 class="text-center">Our Trending <span class="text-danger">Products</span></h3>
       </div>
 
       <div class="container mt-5 d-flex justify-content-between">
-        {{#each data.products}}
+        {{#each data.products.hot}}
         <form method="post" action='/add-cart/{{this.id}}'>
           <div class="card shadow me-3 pb-1" style="width: 12rem;  ">
             <img src={{this.image}} class="card-img-top" alt="..." style="width: 100%;">
@@ -146,7 +146,32 @@
               <p class="m-0">{{this.description}}</p>
               <p class="m-0 text-danger">Rp.{{this.price}}</p>
               <button type="submit" class="fst-italic btn btn-outline-success btn-sm mt-1">
-                <i class="fa-regular fa-heart"></i>
+                <i class="fa-solid fa-cart-shopping"></i>
+              </button>
+            </div>
+          </div>
+        </form>
+        {{/each}}
+      </div>
+    </div>
+
+
+    <div class=" bg-white py-5">
+      <div>
+        <h3 class="text-center">Other <span class="text-danger">Products</span></h3>
+      </div>
+
+      <div class="container mt-5 d-flex justify-content-between">
+        {{#each data.products.reguler}}
+        <form method="post" action='/add-cart/{{this.id}}'>
+          <div class="card shadow me-3 pb-1" style="width: 12rem;  ">
+            <img src={{this.image}} class="card-img-top" alt="..." style="width: 100%;">
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-success m-0">{{this.title}}</h5>
+              <p class="m-0">{{this.description}}</p>
+              <p class="m-0 text-danger">Rp.{{this.price}}</p>
+              <button type="submit" class="fst-italic btn btn-outline-success btn-sm mt-1">
+                <i class="fa-solid fa-cart-shopping"></i>
               </button>
             </div>
           </div>
